@@ -1,0 +1,22 @@
+<!-- detalles-contacto.page.html -->
+
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/contactos"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalles del contacto</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-thumbnail slot="start">
+    <ion-img [src]="contacto.foto"></ion-img>
+  </ion-thumbnail>
+  <ion-label>{{ contacto.nombre }} {{ contacto.apellido }}</ion-label>
+  <!-- Agrega más campos según la información que quieras mostrar -->
+  <ion-label>Ubicación: {{ contacto.ubicacion }}</ion-label>
+  <ion-label>Número de Celular: {{ contacto.numeroCelular }}</ion-label>
+  <ion-label>Correo: {{ contacto.correo }}</ion-label>
+  <!-- ... -->
+</ion-content>

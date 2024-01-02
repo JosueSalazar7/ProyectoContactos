@@ -25,7 +25,11 @@ const routes: Routes = [
   {
     path: 'agregarcontacto',
     loadChildren: () => import('./pages/agregarcontacto/agregarcontacto.module').then( m => m.AgregarcontactoPageModule)
+  },  {
+    path: 'detallecontacto',
+    loadChildren: () => import('./pages/detallecontacto/detallecontacto.module').then( m => m.DetallecontactoPageModule)
   },
+
 
 ];
  

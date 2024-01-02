@@ -1,12 +1,14 @@
-import { Component } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { ContactosService, Contacto } from '../../services/contactos.service';
 
 @Component({
   selector: 'app-agregarcontacto',
   templateUrl: './agregarcontacto.page.html',
   styleUrls: ['./agregarcontacto.page.scss'],
 })
-export class AgregarcontactoPage { // Cambia el nombre de la clase a 'AgregarcontactoPage'
+export class AgregarcontactoPage implements OnInit {
+  // Define las propiedades del nuevo contacto
   nombre: string;
   apellido: string;
   ubicacion: string;
@@ -14,10 +16,33 @@ export class AgregarcontactoPage { // Cambia el nombre de la clase a 'Agregarcon
   numeroCelular: string;
   correo: string;
 
-  constructor(private navCtrl: NavController) {}
+  constructor(private contactosService: ContactosService, private router: Router) { }
 
+  ngOnInit() {
+  }
+
+  // Método para guardar el contacto
   guardarContacto() {
-    // Aquí puedes implementar la lógica para guardar el contacto
-    // Puedes acceder a los valores de los campos a través de las propiedades del componente (this.nombre, this.apellido, etc.)
+    // Crea un objeto de tipo Contacto con los datos del formulario
+    const nuevoContacto: Contacto = {
+      id: '', // Puedes generar un ID o utilizar el que provee Firestore al agregar el documento
+      nombre: this.nombre,
+      apellido: this.apellido,
+      ubicacion: this.ubicacion,
+      foto: this.foto,
+      numeroCelular: this.numeroCelular,
+      correo: this.correo,
+    };
+
+    // Llama al servicio para agregar el nuevo contacto
+    this.contactosService.agregarContacto(nuevoContacto)
+      .then(() => {
+        // Después de agregar el contacto, navega de nuevo a la página de contactos
+        this.router.navigateByUrl('/contactos');
+      })
+      .catch((error) => {
+        // Maneja cualquier error que pueda ocurrir durante la operación
+        console.error('Error al agregar contacto', error);
+      });
   }
 }

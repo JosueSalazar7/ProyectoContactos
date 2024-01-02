@@ -14,4 +14,7 @@ export class ContactosPage {
     // Lógica para redirigir a la página de agregar contacto
     this.navCtrl.navigateForward('/agregarcontacto');
   }
+  verDetalles(contactoId: number) {
+    this.navCtrl.navigateForward(`/detallecontacto/${contactoId}`);
+  }
 }

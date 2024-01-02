@@ -1,23 +1,23 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { AngularFirestore } from '@angular/fire/firestore';
+import { AngularFirestore, DocumentReference } from '@angular/fire/firestore';
 import firebase from 'firebase/app';
 import { switchMap, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import * as CryptoJS from 'crypto-js';
 
 export interface User {
   uid: string;
   email: string;
 }
- 
-export interface Message {
-  createdAt: firebase.firestore.FieldValue;
+
+export interface Contacto {
   id: string;
-  from: string;
-  msg: string;
-  fromName: string;
-  myMsg: boolean;
+  nombre: string;
+  apellido: string;
+  ubicacion: string;
+  foto: string;
+  numeroCelular: string;
+  correo: string;
 }
 
 @Injectable({
@@ -26,7 +26,6 @@ export interface Message {
 export class ContactosService {
   currentUser: User = null;
 
-  secretKey = "123456&Descryption";
   constructor(private afAuth: AngularFireAuth, private afs: AngularFirestore) { 
     this.afAuth.onAuthStateChanged((user) => {
       this.currentUser = user;      
@@ -58,54 +57,17 @@ export class ContactosService {
     return this.afAuth.signOut();
   }
  
-  // Chat functionality
+  // Funcionalidad de Contactos
  
-addChatMessage(msg) {
-  return this.afs.collection('messages').add({
-    msg: this.encrypt(msg),
-    from: this.currentUser.uid,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-}
- 
-getChatMessages() {
-  let users = [];
-  return this.getUsers().pipe(
-    switchMap(res => {
-      users = res;
-      return this.afs.collection('messages', ref => ref.orderBy('createdAt')).valueChanges({ idField: 'id' }) as Observable<Message[]>;
-    }),
-    map(messages => {
-      // Get the real name for each user
-      for (let m of messages) {          
-        m.fromName = this.getUserForMsg(m.from, users);
-        m.myMsg = this.currentUser.uid === m.from;
-        m.msg= this.decrypt(m.msg);
-      }
-      console.log('all messages', messages);        
-      return messages;
-    })
-  )
-}
- 
-private getUsers() {
-  return this.afs.collection('users').valueChanges({ idField: 'uid' }) as Observable<User[]>;
-}
- 
-private getUserForMsg(msgFromId, users: User[]): string {    
-  for (let usr of users) {
-    if (usr.uid == msgFromId) {
-      return usr.email;
-    }
+  agregarContacto(contacto: Contacto): Promise<DocumentReference<Contacto>> {
+    return this.afs.collection<Contacto>('contactos').add(contacto);
   }
-  return 'Deleted';
-}
-
-encrypt(value : string) : string{
-  return CryptoJS.AES.encrypt(value, this.secretKey.trim()).toString();
-}
-
-decrypt(textToDecrypt : string){
-  return CryptoJS.AES.decrypt(textToDecrypt, this.secretKey.trim()).toString(CryptoJS.enc.Utf8);
-}
+ 
+  obtenerListaContactos(): Observable<Contacto[]> {
+    return this.afs.collection<Contacto>('contactos').valueChanges({ idField: 'id' }) as Observable<Contacto[]>;
+  }
+ 
+  obtenerDetallesContacto(contactoId: string): Observable<Contacto> {
+    return this.afs.collection<Contacto>('contactos').doc(contactoId).valueChanges() as Observable<Contacto>;
+  }
 }
