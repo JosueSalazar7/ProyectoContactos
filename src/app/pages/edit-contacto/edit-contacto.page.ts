@@ -1,36 +1,45 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ContactosService, Contacto } from '../../services/contactos.service';
+import { Router } from '@angular/router';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
 
 @Component({
-  selector: 'app-agregarcontacto',
-  templateUrl: './agregarcontacto.page.html',
-  styleUrls: ['./agregarcontacto.page.scss'],
+  selector: 'app-edit-contacto',
+  templateUrl: './edit-contacto.page.html',
+  styleUrls: ['./edit-contacto.page.scss'],
 })
-export class AgregarcontactoPage implements OnInit {
-  id?: string;
-  idClient?: string; 
-  nombre: string;
-  apellido: string;
-  ubicacion: string;
-  foto: string;
-  numeroCelular: string;
-  correo: string;
+export class EditContactoPage implements OnInit {
+  detalleContacto: Contacto | null;
+  id: string;
   latitude: any;
   longitude: any;
+  ubicacion: string;
 
   constructor(
+    private route: ActivatedRoute,
     private contactosService: ContactosService,
     private router: Router,
     private geolocation: Geolocation
-  ) {}
-
-  ngOnInit() {
-    this.getCurrentCoordinates();
-    this.getAddressFromCoords(); // Llamada directa al inicio de la página
+  ) {
+    this.detalleContacto = { nombre: '', apellido: '', ubicacion: '', foto: '', numeroCelular: '', correo: '' };
   }
 
+
+  ngOnInit() {
+    this.route.params.subscribe(params => {
+      const contactoId = params['id'];
+
+      // Llamar a la función del servicio para obtener detalles del contacto
+      this.contactosService.obtenerDetallesContacto(contactoId).subscribe(detalle => {
+        // Almacenar el resultado en la propiedad del componente
+        this.detalleContacto = detalle;
+      });
+    });
+    this.getCurrentCoordinates();
+    this.getAddressFromCoords(); // Llamada directa al inicio de la página
+
+  }
   getCurrentCoordinates() {
     const options = {
       timeout: 10000,
@@ -54,7 +63,7 @@ export class AgregarcontactoPage implements OnInit {
     try {
       const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.latitude}&lon=${this.longitude}`);
       const data = await response.json();
-  
+
       // Asumiendo que 'display_name' es el campo que contiene la dirección
       if (data.display_name) {
         this.ubicacion = data.display_name;
@@ -65,26 +74,25 @@ export class AgregarcontactoPage implements OnInit {
       console.error('Error obteniendo la dirección:', error);
     }
   }
-  
-
   guardarContacto() {
-    console.log("Entrooooooooooooo")
     const nuevoContacto: Contacto = {
-      id: '',
-      nombre: this.nombre,
-      apellido: this.apellido,
+      ...this.detalleContacto, // Copia las propiedades existentes del contacto
+      nombre: this.detalleContacto.nombre,
+      apellido: this.detalleContacto.apellido,
       ubicacion: this.ubicacion,
-      foto: this.foto,
-      numeroCelular: this.numeroCelular,
-      correo: this.correo,
+      foto: this.detalleContacto.foto,
+      numeroCelular: this.detalleContacto.numeroCelular,
+      correo: this.detalleContacto.correo,
     };
-    console.log("Nuevo contacto", nuevoContacto)
-    this.contactosService.agregarContacto(nuevoContacto)
+
+    // Usar el id del detalleContacto
+    this.contactosService
+      .actualizarContacto(this.detalleContacto.id, nuevoContacto)
       .then(() => {
         this.router.navigateByUrl('/contactos');
       })
       .catch((error) => {
-        console.error('Error al agregar contacto', error);
+        console.error('Error al actualizar contacto', error);
       });
   }
 }

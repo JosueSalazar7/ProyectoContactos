@@ -9,13 +9,28 @@
 <ion-content>
   <ion-list>
     <!-- Lista de contactos existentes -->
-    <ion-item *ngFor="let contacto of contactos" (click)="verDetalles(contacto.id)">
+    <ion-item *ngFor="let contacto of contactos">
       <ion-thumbnail slot="start">
         <ion-img [src]="contacto.foto"></ion-img>
       </ion-thumbnail>
-      <ion-label>{{ contacto.nombre }} {{ contacto.apellido }}</ion-label>
+      <ion-label>{{ contacto?.nombre }} {{ contacto?.apellido }}</ion-label>
+      <ion-buttons slot="end">
+        <!-- Botón Ojo para ver detalles -->
+        <ion-button (click)="verDetalles(contacto?.id)">
+          <ion-icon name="eye"></ion-icon>
+        </ion-button>
+        <!-- Botón Editar -->
+        <ion-button color="primary" (click)="editarContacto(contacto?.id)">
+          <ion-icon name="create"></ion-icon>
+        </ion-button>
+        <!-- Botón Eliminar -->
+        <ion-button color="danger" (click)="eliminarContacto(contacto.id)">
+          <ion-icon name="trash"></ion-icon>
+        </ion-button>
+      </ion-buttons>
     </ion-item>
   </ion-list>
+
 
   <!-- Botón flotante en la esquina inferior derecha -->
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
