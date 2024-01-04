@@ -23,7 +23,7 @@ export class EditContactoPage implements OnInit {
     private geolocation: Geolocation
   ) {
     this.detalleContacto = {
-      nombre: '', apellido: '', ubicacion: '', foto: { filepath: '', webviewPath: '' }// Ajusta el tipo de la propiedad foto
+      nombre: '', apellido: '', ubicacion: '', foto: ''// Ajusta el tipo de la propiedad foto
       , numeroCelular: '', correo: ''
     };
   }

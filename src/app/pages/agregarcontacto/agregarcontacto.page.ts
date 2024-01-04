@@ -12,7 +12,6 @@ import { AngularFireStorage } from '@angular/fire/storage';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { finalize, tap } from 'rxjs/operators';
-import { resolve } from 'dns';
 
 @Component({
   selector: 'app-agregarcontacto',
