@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { ContactosService, Contacto } from '../../services/contactos.service'; // Asegúrate de proporcionar la ruta correcta
 
+
 @Component({
   selector: 'app-contactos',
   templateUrl: './contactos.page.html',
@@ -12,12 +13,14 @@ export class ContactosPage {
 
   constructor(
     private navCtrl: NavController,
-    private contactosService: ContactosService // Agrega esta línea
+    private contactosService: ContactosService, // Agrega esta línea
+
   ) { }
 
   ngOnInit() {
     this.obtenerListaContactos(); // Llama a la función para obtener la lista de contactos al inicializar el componente
   }
+
 
   agregarContacto() {
     this.navCtrl.navigateForward('/agregarcontacto');

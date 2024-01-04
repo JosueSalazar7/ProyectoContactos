@@ -10,9 +10,9 @@
 </ion-header>
 
 <ion-content>
-  <!-- <ion-thumbnail slot="start">
-    <ion-img [src]="contacto.foto"></ion-img>
-  </ion-thumbnail> -->
+  <ion-thumbnail slot="start">
+    <ion-img [src]="detalleContacto?.foto"></ion-img>
+  </ion-thumbnail>
   <ion-label>{{ detalleContacto?.nombre }} {{ detalleContacto?.apellido }}</ion-label>
   <!-- Agrega más campos según la información que quieras mostrar -->
   <ion-label>Ubicación: {{ detalleContacto?.ubicacion }}</ion-label>
