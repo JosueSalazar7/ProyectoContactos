@@ -9,7 +9,6 @@ import { Preferences } from '@capacitor/preferences';
 import { Capacitor } from '@capacitor/core';
 import { ActionSheetController } from '@ionic/angular';
 import { AngularFireStorage } from '@angular/fire/storage';
-import { AngularFirestore } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { finalize, tap } from 'rxjs/operators';
 
@@ -33,8 +32,7 @@ export class AgregarcontactoPage implements OnInit {
   trackSnapshot: Observable<unknown>;
   isFileUploading: boolean;
   imgSize: any;
-  savedImageFile: any;
-
+  disableButton: Boolean;
   constructor(
     private contactosService: ContactosService,
     private router: Router,
@@ -49,6 +47,8 @@ export class AgregarcontactoPage implements OnInit {
     this.getCurrentCoordinates();
     this.getAddressFromCoords(); // Llamada directa al inicio de la página
   }
+
+
   public photos: UserPhoto[] = [];
   private PHOTO_STORAGE: string = 'photos';
   getCurrentCoordinates() {
@@ -70,6 +70,20 @@ export class AgregarcontactoPage implements OnInit {
       });
   }
 
+  async deleteImageByUrl(): Promise<void> {
+    try {
+      // Obtener la referencia a la imagen en Firebase Storage usando la URL
+      const imageRef = this.storage.storage.refFromURL(this.foto);
+
+      // Eliminar la imagen
+      await imageRef.delete();
+
+      console.log(`Imagen eliminada con éxito: ${this.foto}`);
+    } catch (error) {
+      console.error('Error al eliminar la imagen', error);
+      throw error; // Puedes propagar el error si es necesario
+    }
+  }
 
   public async showActionSheet(position: number) {
     const actionSheet = await this.actionSheetController.create({
@@ -100,12 +114,14 @@ export class AgregarcontactoPage implements OnInit {
       quality: 100, // highest quality (0 to 100)
     });
 
-    this.savedImageFile = await this.savePicture(capturedPhoto);
-    console.log("==============", this.savedImageFile)
+    const savedImageFile = await this.savePicture(capturedPhoto);
+    console.log("==============", savedImageFile)
     // Add new photo to Photos array
-    this.photos.unshift(this.savedImageFile);
+    this.photos.unshift(savedImageFile);
 
     // await this.savePictureURL(capturedPhoto);
+    await this.uploadImage(capturedPhoto);
+
     // Cache all photo data for future retrieval
     Preferences.set({
       key: this.PHOTO_STORAGE,
@@ -141,79 +157,16 @@ export class AgregarcontactoPage implements OnInit {
     }
   }
 
-
-  // uploadImage(file: any, path: string, nombre: string): Promise<String> {
-  //   return new Promise(resolve => {
-  //     const filePath = path + '/' + this.nombre;
-  //     const ref = this.storage.ref(filePath);
-  //     const task = ref.put(file);
-  //     task.snapshotChanges().pipe(
-  //       finalize(() => {
-  //         ref.getDownloadURL().subscribe(res => {
-  //           const downloadURL = res;
-  //           resolve(downloadURL)
-  //           this.foto = downloadURL
-  //           return
-  //         })
-  //       })
-  //     )
-  //   })
-  // }
-
-  // async uploadImage(captu: Photo) {
-  //   const savedImageFile = await this.savePicture(captu);
-  //   const webPath = savedImageFile.webviewPath;
-
-  //   // Fetch the image as Blob
-  //   const blob = await fetch(webPath).then((res) => res.blob());
-
-  //   // Storage path
-  //   const fileStoragePath = `filesStorage/${new Date().getTime()}_${savedImageFile.filepath}`;
-
-  //   // Image reference
-  //   const imageRef = this.storage.ref(fileStoragePath);
-  //   // File upload task
-  //   const uploadTask = imageRef.put(blob);
-
-  //   uploadTask.snapshotChanges().pipe(
-  //     finalize(()=>{
-  //       imageRef.getDownloadURL().subscribe( res =>{
-  //         const downloadURL = res;
-  //         console.log(downloadURL)
-  //         resolve(downloadURL);
-  //         return
-  //       })
-  //     })
-  //   )
-  //   // Show uploading progress
-  //   // this.trackSnapshot = uploadTask.snapshotChanges().pipe(
-  //   //   finalize(async () => {
-  //   //     // Retrieve uploaded image storage path
-  //   //     const uploadedImageURL = await imageRef.getDownloadURL().toPromise();
-  //   //     console.log("IMAGENULT - - - - ", uploadedImageURL);
-  //   //     // Use the value when the Observable completes
-  //   //     this.foto = uploadedImageURL
-  //   //     this.storeFilesFirebase({
-  //   //       name: savedImageFile.filepath,
-  //   //       filepath: uploadedImageURL,
-  //   //     });
-
-  //   //     this.isFileUploading = false;
-  //   //   }),
-  //   //   tap((snap: any) => {
-  //   //     this.imgSize = snap.totalBytes;
-  //   //   })
-  //   // );
-  // }
-  async uploadImage(): Promise<void> {
+  async uploadImage(captu: Photo): Promise<void> {
     try {
-      const webPath = this.savedImageFile.webviewPath;
+      const savedImageFile = await this.savePicture(captu);
+      const webPath = savedImageFile.webviewPath;
 
       // Fetch the image as Blob
       const blob = await fetch(webPath).then((res) => res.blob());
 
       // Storage path
-      const fileStoragePath = `filesStorage/${new Date().getTime()}_${this.savedImageFile.filepath}`;
+      const fileStoragePath = `filesStorage/${new Date().getTime()}_${savedImageFile.filepath}`;
 
       // Image reference
       const imageRef = this.storage.ref(fileStoragePath);
@@ -263,7 +216,7 @@ export class AgregarcontactoPage implements OnInit {
 
   // Delete picture by removing it from reference data and the filesystem
   public async deletePicture(photo: UserPhoto, position: number) {
-    // Remove this photo from the Photos reference data array
+    this.deleteImageByUrl();
     this.photos.splice(position, 1);
 
     // Update photos array cache by overwriting the existing photo array
@@ -315,7 +268,6 @@ export class AgregarcontactoPage implements OnInit {
     });
   async guardarContacto() {
     try {
-      await this.uploadImage();
       console.log("Entrooooooooooooo", this.foto);
 
       const nuevoContacto: Contacto = {
@@ -334,9 +286,6 @@ export class AgregarcontactoPage implements OnInit {
       if (this.foto) {
         await this.contactosService.agregarContacto(nuevoContacto);
         this.router.navigateByUrl('/contactos');
-      } else {
-        console.error('La propiedad "foto" está indefinida.');
-        this.guardarContacto()
       }
     } catch (error) {
       console.error('Error al guardar el contacto', error);

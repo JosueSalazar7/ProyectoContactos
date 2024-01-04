@@ -1,11 +1,22 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Agregar Contacto Nuevo</ion-title>
+    <ion-title>Editar Contacto</ion-title>
     <ion-back-button defaultHref="/contactos"></ion-back-button>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <ion-item>
+    <ion-label position="floating">Foto</ion-label>
+    <!-- Puedes utilizar ion-input para el nombre del archivo o implementar un selector de archivos -->
+    <ion-grid>
+      <ion-row>
+        <ion-col size="2">
+          <ion-img [src]="detalleContacto.foto"></ion-img>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-item>
   <ion-item>
     <ion-label position="floating">Nombre</ion-label>
     <ion-input [(ngModel)]="detalleContacto.nombre" name="nombre" type="text"></ion-input>
@@ -22,11 +33,6 @@
     <ion-input [(ngModel)]="detalleContacto.ubicacion" name="ubicacion" type="text" readonly></ion-input>
   </ion-item>
 
-  <ion-item>
-    <ion-label position="floating">Foto</ion-label>
-    <!-- Puedes utilizar ion-input para el nombre del archivo o implementar un selector de archivos -->
-    <ion-input [(ngModel)]="detalleContacto.foto" name="foto" type="text"></ion-input>
-  </ion-item>
 
   <ion-item>
     <ion-label position="floating">Número de Celular</ion-label>

@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { DocumentSnapshot } from '@angular/fire/firestore';
+import { AngularFireStorage } from '@angular/fire/storage';
 
 export interface User {
   uid: string;
@@ -28,7 +29,8 @@ export interface Contacto {
 export class ContactosService {
   currentUser: User = null;
 
-  constructor(private afAuth: AngularFireAuth, private afs: AngularFirestore) {
+  constructor(private afAuth: AngularFireAuth, private afs: AngularFirestore, private storage: AngularFireStorage, // Agrega AngularFireStorage
+  ) {
     this.afAuth.authState.subscribe(user => {
       if (user) {
         this.currentUser = user;
@@ -125,11 +127,30 @@ export class ContactosService {
     );
   }
 
-  eliminarContacto(contactoId: string): Promise<void> {
-    console.error("============", contactoId)
+  async deleteImageByUrl(imageUrl: string): Promise<void> {
+    try {
+      // Obtener la referencia a la imagen en Firebase Storage usando la URL
+      const imageRef = this.storage.storage.refFromURL(imageUrl);
+
+      // Eliminar la imagen
+      await imageRef.delete();
+
+      console.log(`Imagen eliminada con éxito: ${imageUrl}`);
+    } catch (error) {
+      console.error('Error al eliminar la imagen', error);
+      throw error; // Puedes propagar el error si es necesario
+    }
+  }
+
+
+
+  eliminarContacto(contactoId: string, fotos: string): Promise<void> {
+    this.deleteImageByUrl(fotos)
     const documentRef = this.afs.collection<Contacto>('contactos').doc(contactoId);
     console.error("- -- - - -", documentRef)
+    console.log("===========", documentRef)
     return documentRef.delete();
+
   }
 
   async actualizarContacto(contactoId: string, datosActualizados: any): Promise<void> {

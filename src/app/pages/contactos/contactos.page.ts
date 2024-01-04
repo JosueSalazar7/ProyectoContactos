@@ -34,9 +34,9 @@ export class ContactosPage {
   editarContacto(contactoId: string) {
     this.navCtrl.navigateForward(`/edit-contacto/${contactoId}`);
   }
-  eliminarContacto(contactoId: string) {
+  eliminarContacto(contactoId: string, foto: string) {
     console.error("ContactId", contactoId)
-    this.contactosService.eliminarContacto(contactoId)
+    this.contactosService.eliminarContacto(contactoId, foto)
       .then(() => {
         // Actualiza la lista de contactos después de la eliminación
         this.obtenerListaContactos();
