@@ -11,6 +11,8 @@ import { ActionSheetController } from '@ionic/angular';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
+import { finalize, tap } from 'rxjs/operators';
+import { resolve } from 'dns';
 
 @Component({
   selector: 'app-agregarcontacto',
@@ -23,12 +25,16 @@ export class AgregarcontactoPage implements OnInit {
   nombre: string;
   apellido: string;
   ubicacion: string;
-  foto: Observable<any>;
+  foto: string;
   numeroCelular: string;
   correo: string;
   latitude: any;
   longitude: any;
   photo: UserPhoto
+  trackSnapshot: Observable<unknown>;
+  isFileUploading: boolean;
+  imgSize: any;
+  savedImageFile: any;
 
   constructor(
     private contactosService: ContactosService,
@@ -37,7 +43,6 @@ export class AgregarcontactoPage implements OnInit {
     private platform: Platform,
     public actionSheetController: ActionSheetController,
     private storage: AngularFireStorage, // Agrega AngularFireStorage
-    private firestore: AngularFirestore
   ) { }
 
 
@@ -96,12 +101,12 @@ export class AgregarcontactoPage implements OnInit {
       quality: 100, // highest quality (0 to 100)
     });
 
-    const savedImageFile = await this.savePicture(capturedPhoto);
-    console.log("==============", savedImageFile)
+    this.savedImageFile = await this.savePicture(capturedPhoto);
+    console.log("==============", this.savedImageFile)
     // Add new photo to Photos array
-    this.photos.unshift(savedImageFile);
+    this.photos.unshift(this.savedImageFile);
 
-    await this.savePictureURL(capturedPhoto);
+    // await this.savePictureURL(capturedPhoto);
     // Cache all photo data for future retrieval
     Preferences.set({
       key: this.PHOTO_STORAGE,
@@ -136,38 +141,107 @@ export class AgregarcontactoPage implements OnInit {
       };
     }
   }
-  private async savePictureURL(photo: Photo) {
+
+
+  // uploadImage(file: any, path: string, nombre: string): Promise<String> {
+  //   return new Promise(resolve => {
+  //     const filePath = path + '/' + this.nombre;
+  //     const ref = this.storage.ref(filePath);
+  //     const task = ref.put(file);
+  //     task.snapshotChanges().pipe(
+  //       finalize(() => {
+  //         ref.getDownloadURL().subscribe(res => {
+  //           const downloadURL = res;
+  //           resolve(downloadURL)
+  //           this.foto = downloadURL
+  //           return
+  //         })
+  //       })
+  //     )
+  //   })
+  // }
+
+  // async uploadImage(captu: Photo) {
+  //   const savedImageFile = await this.savePicture(captu);
+  //   const webPath = savedImageFile.webviewPath;
+
+  //   // Fetch the image as Blob
+  //   const blob = await fetch(webPath).then((res) => res.blob());
+
+  //   // Storage path
+  //   const fileStoragePath = `filesStorage/${new Date().getTime()}_${savedImageFile.filepath}`;
+
+  //   // Image reference
+  //   const imageRef = this.storage.ref(fileStoragePath);
+  //   // File upload task
+  //   const uploadTask = imageRef.put(blob);
+
+  //   uploadTask.snapshotChanges().pipe(
+  //     finalize(()=>{
+  //       imageRef.getDownloadURL().subscribe( res =>{
+  //         const downloadURL = res;
+  //         console.log(downloadURL)
+  //         resolve(downloadURL);
+  //         return
+  //       })
+  //     })
+  //   )
+  //   // Show uploading progress
+  //   // this.trackSnapshot = uploadTask.snapshotChanges().pipe(
+  //   //   finalize(async () => {
+  //   //     // Retrieve uploaded image storage path
+  //   //     const uploadedImageURL = await imageRef.getDownloadURL().toPromise();
+  //   //     console.log("IMAGENULT - - - - ", uploadedImageURL);
+  //   //     // Use the value when the Observable completes
+  //   //     this.foto = uploadedImageURL
+  //   //     this.storeFilesFirebase({
+  //   //       name: savedImageFile.filepath,
+  //   //       filepath: uploadedImageURL,
+  //   //     });
+
+  //   //     this.isFileUploading = false;
+  //   //   }),
+  //   //   tap((snap: any) => {
+  //   //     this.imgSize = snap.totalBytes;
+  //   //   })
+  //   // );
+  // }
+  async uploadImage(): Promise<void> {
     try {
-      // Convert photo to base64 format
-      const base64Data = await this.readAsBase64(photo);
+      const webPath = this.savedImageFile.webviewPath;
 
-      // Generate a unique filename
-      const fileName = new Date().getTime() + '.jpeg';
+      // Fetch the image as Blob
+      const blob = await fetch(webPath).then((res) => res.blob());
 
-      // Write the file to the data directory
-      const savedFile = await Filesystem.writeFile({
-        path: fileName,
-        data: base64Data,
-        directory: Directory.Data,
-      });
+      // Storage path
+      const fileStoragePath = `filesStorage/${new Date().getTime()}_${this.savedImageFile.filepath}`;
 
-      // Upload the file to Firebase Storage
-      const storagePath = `fotos/${fileName}`;
-      const storageRef = this.storage.ref(storagePath);
-      console.log("saveeee", savedFile.uri)
-      await storageRef.put(savedFile.uri, { contentType: 'image/jpeg' });
+      // Image reference
+      const imageRef = this.storage.ref(fileStoragePath);
 
-      // Get the download URL
-      const downloadURL = await storageRef.getDownloadURL();
-      console.log(downloadURL)
-      // Set the photo properties
-      this.foto = downloadURL;
+      // File upload task
+      const uploadTask = imageRef.put(blob);
+
+      // Wait for the snapshotChanges to complete
+      await uploadTask.snapshotChanges().pipe(
+        finalize(() => {
+          imageRef.getDownloadURL().subscribe((res) => {
+            const downloadURL = res;
+            console.log(downloadURL);
+            this.foto = downloadURL
+            // Use the downloadURL as needed
+          });
+        })
+      ).toPromise(); // Convert the observable to a promise
     } catch (error) {
-      console.error('Error saving picture:', error);
-      throw error; // Propagate the error
+      console.error('Error in uploadImage', error);
     }
   }
 
+
+  storeFilesFirebase(arg0: { name: string; filepath: any; }) {
+    throw new Error('Method not implemented.');
+  }
 
 
   private async readAsBase64(photo: Photo) {
@@ -240,36 +314,35 @@ export class AgregarcontactoPage implements OnInit {
       };
       reader.readAsDataURL(blob);
     });
-  guardarContacto() {
-    const nuevoContacto: Contacto = {
-      id: '',
-      nombre: this.nombre,
-      apellido: this.apellido,
-      ubicacion: this.ubicacion,
-      foto: { filepath: "", webviewPath: "" }, // Ajusta el tipo de la propiedad foto
-      numeroCelular: this.numeroCelular,
-      correo: this.correo,
-    };
+  async guardarContacto() {
+    try {
+      await this.uploadImage();
+      console.log("Entrooooooooooooo", this.foto);
 
-    // Suscríbete a la Observable para obtener la URL y asignarla al campo foto
-    this.foto.subscribe(
-      (url) => {
-        nuevoContacto.foto = url;
-        // Ahora puedes llamar a la función que agrega el contacto con el nuevoContacto
-        this.contactosService.agregarContacto(nuevoContacto)
-          .then(() => {
-            this.router.navigateByUrl('/contactos');
-          })
-          .catch((error) => {
-            console.error('Error al agregar contacto', error);
-          });
-      },
-      (error) => {
-        console.error('Error al obtener la URL de la foto', error);
+      const nuevoContacto: Contacto = {
+        id: '',
+        nombre: this.nombre,
+        apellido: this.apellido,
+        ubicacion: this.ubicacion,
+        foto: this.foto,
+        numeroCelular: this.numeroCelular,
+        correo: this.correo,
+      };
+
+      console.log("Nuevo contacto", nuevoContacto);
+
+      // Verificar si la propiedad 'foto' tiene un valor antes de agregar el contacto
+      if (this.foto) {
+        await this.contactosService.agregarContacto(nuevoContacto);
+        this.router.navigateByUrl('/contactos');
+      } else {
+        console.error('La propiedad "foto" está indefinida.');
+        this.guardarContacto()
       }
-    );
+    } catch (error) {
+      console.error('Error al guardar el contacto', error);
+    }
   }
-
 }
 export interface UserPhoto {
   filepath: string;

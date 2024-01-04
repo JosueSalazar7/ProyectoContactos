@@ -17,7 +17,7 @@ export interface Contacto {
   nombre: string;
   apellido: string;
   ubicacion: string;
-  foto: { filepath: string; webviewPath: string }; // Ajusta el tipo de la propiedad foto
+  foto: string; // Ajusta el tipo de la propiedad foto
   numeroCelular: string;
   correo: string;
 }
@@ -57,23 +57,16 @@ export class ContactosService {
 
   // Funcionalidad de Contactos
 
-  async agregarContacto(contacto: Contacto) {
-    try {
-      const idCliente = this.currentUser.uid; // Asegúrate de que currentUser tenga un valor válido
+  agregarContacto(contacto: Contacto): Promise<void> {
+    const idCliente = this.currentUser.uid;
+    const idContacto = this.afs.createId();
 
-      // Generar un nuevo ID para el contacto
-      const idContacto = this.afs.createId();
+    // Asignar los IDs al contacto
+    contacto.id = idContacto;
+    contacto.idCliente = idCliente;
 
-      // Asignar los IDs al contacto
-      contacto.id = idContacto;
-      contacto.idCliente = idCliente;
 
-      const docRef = await this.afs.collection('contactos').add(contacto);
-      console.log('Contacto agregado con ID: ', docRef.id);
-      return docRef.id;
-    } catch (error) {
-      throw new Error('Error al agregar contacto: ' + error);
-    }
+    return this.afs.collection<Contacto>('contactos').doc(idContacto).set(contacto);
   }
 
 
