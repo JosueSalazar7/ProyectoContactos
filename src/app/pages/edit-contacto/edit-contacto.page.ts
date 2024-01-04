@@ -3,6 +3,8 @@ import { ActivatedRoute } from '@angular/router';
 import { ContactosService, Contacto } from '../../services/contactos.service';
 import { Router } from '@angular/router';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
+import { Camera, CameraOptions, CameraResultType } from '@capacitor/camera';
+import { AngularFireStorage } from '@angular/fire/storage';
 
 @Component({
   selector: 'app-edit-contacto',
@@ -20,29 +22,27 @@ export class EditContactoPage implements OnInit {
     private route: ActivatedRoute,
     private contactosService: ContactosService,
     private router: Router,
-    private geolocation: Geolocation
+    private geolocation: Geolocation,
+    private storage: AngularFireStorage, // Agrega AngularFireStorage
   ) {
     this.detalleContacto = {
-      nombre: '', apellido: '', ubicacion: '', foto: ''// Ajusta el tipo de la propiedad foto
-      , numeroCelular: '', correo: ''
+      nombre: '', apellido: '', ubicacion: '', foto: '',
+      numeroCelular: '', correo: ''
     };
   }
-
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       const contactoId = params['id'];
 
-      // Llamar a la función del servicio para obtener detalles del contacto
       this.contactosService.obtenerDetallesContacto(contactoId).subscribe(detalle => {
-        // Almacenar el resultado en la propiedad del componente
         this.detalleContacto = detalle;
       });
     });
     this.getCurrentCoordinates();
-    this.getAddressFromCoords(); // Llamada directa al inicio de la página
-
+    this.getAddressFromCoords();
   }
+
   getCurrentCoordinates() {
     const options = {
       timeout: 10000,
@@ -67,7 +67,6 @@ export class EditContactoPage implements OnInit {
       const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.latitude}&lon=${this.longitude}`);
       const data = await response.json();
 
-      // Asumiendo que 'display_name' es el campo que contiene la dirección
       if (data.display_name) {
         this.ubicacion = data.display_name;
       } else {
@@ -77,18 +76,46 @@ export class EditContactoPage implements OnInit {
       console.error('Error obteniendo la dirección:', error);
     }
   }
+
+  seleccionarFoto() {
+    const options: CameraOptions = {
+      quality: 100,
+      allowEditing: true,
+      resultType: CameraResultType.DataUrl,
+    };
+
+    this.deleteImageByUrl();
+
+    Camera.getPhoto(options).then((image) => {
+      this.detalleContacto.foto = image.dataUrl;
+    }).catch((error) => {
+      console.error('Error al seleccionar la foto', error);
+    });
+  }
+
+  async deleteImageByUrl(): Promise<void> {
+    try {
+      // Obtener la referencia a la imagen en Firebase Storage usando la URL
+      const imageRef = this.storage.storage.refFromURL(this.detalleContacto.foto);
+
+      // Eliminar la imagen
+      await imageRef.delete();
+
+      console.log(`Imagen eliminada con éxito: ${this.detalleContacto.foto}`);
+    } catch (error) {
+      console.error('Error al eliminar la imagen', error);
+      throw error; // Puedes propagar el error si es necesario
+    }
+  }
+
   guardarContacto() {
     const nuevoContacto: Contacto = {
-      ...this.detalleContacto, // Copia las propiedades existentes del contacto
-      nombre: this.detalleContacto.nombre,
-      apellido: this.detalleContacto.apellido,
+      ...this.detalleContacto,
       ubicacion: this.ubicacion,
-      foto: this.detalleContacto.foto,
       numeroCelular: this.detalleContacto.numeroCelular,
       correo: this.detalleContacto.correo,
     };
 
-    // Usar el id del detalleContacto
     this.contactosService
       .actualizarContacto(this.detalleContacto.id, nuevoContacto)
       .then(() => {
