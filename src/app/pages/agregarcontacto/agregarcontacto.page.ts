@@ -113,7 +113,6 @@ export class AgregarcontactoPage implements OnInit {
       source: CameraSource.Camera, // automatically take a new photo with the camera
       quality: 100, // highest quality (0 to 100)
     });
-
     this.deleteImageByUrl();
     const savedImageFile = await this.savePicture(capturedPhoto);
     console.log("==============", savedImageFile)
