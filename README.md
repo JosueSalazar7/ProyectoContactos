@@ -2,7 +2,8 @@
  * Agenda de contactos, permite agregar contacto nuevo, editar, ver detalles, eliminar.
 
    
- * Login Registro 
+ * Login Registro
+   
 ![image](https://github.com/JosueSalazar7/ProyectoContactos/assets/117753844/311bea0c-25a5-4d4d-af8a-ad592b551cfe)
 
 
