@@ -1,3 +1,14 @@
+* Video Creacicón de Aplicación
+  
+https://youtu.be/YH4U-KYuNQo
+
+* Video Manual de Usuario
+
+https://youtu.be/znspIa5VgLA
+
+
+
+
 # :zap: App de Chat en Ionic con Firebase
 
 App creada usando [Ionic framework](https://ionicframework.com/docs), usando una base de datos en la nube de firebase para almacenar los mensajes y usuarios de la app. Además, se integró capacitor para crear el apk.
