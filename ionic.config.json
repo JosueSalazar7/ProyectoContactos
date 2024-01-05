@@ -1,8 +1,10 @@
 {
-  "name": "Test_2020B_FirstB",
+  "name": "Contactos",
   "integrations": {
-    "capacitor": {},
     "cordova": {}
   },
-  "type": "angular"
+  "type": "angular",
+  "server": {
+    "host": "0.0.0.0"
+  }
 }

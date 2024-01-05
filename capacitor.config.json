@@ -1,6 +1,6 @@
 {
   "appId": "io.ionic.starter",
-  "appName": "Test_2020B_FirstB",
+  "appName": "Contactos",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "www",

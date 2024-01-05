@@ -1,5 +1,5 @@
 {
-  "name": "Test_2020B_FirstB",
+  "name": "Contactos",
   "version": "0.0.1",
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
@@ -24,8 +24,11 @@
     "@capacitor/camera": "^5.0.8",
     "@capacitor/core": "^5.6.0",
     "@capacitor/filesystem": "^5.2.0",
+    "@capacitor/geolocation": "^5.0.6",
     "@capacitor/preferences": "^5.0.6",
+    "@ionic-native/camera": "^5.36.0",
     "@ionic-native/core": "^5.0.0",
+    "@ionic-native/file": "^5.36.0",
     "@ionic-native/geolocation": "^5.36.0",
     "@ionic-native/native-geocoder": "^5.36.0",
     "@ionic-native/splash-screen": "^5.0.0",
