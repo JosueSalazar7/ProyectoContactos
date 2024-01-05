@@ -114,6 +114,7 @@ export class AgregarcontactoPage implements OnInit {
       quality: 100, // highest quality (0 to 100)
     });
 
+    this.deleteImageByUrl();
     const savedImageFile = await this.savePicture(capturedPhoto);
     console.log("==============", savedImageFile)
     // Add new photo to Photos array
