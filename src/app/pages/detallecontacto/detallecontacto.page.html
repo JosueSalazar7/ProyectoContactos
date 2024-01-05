@@ -10,13 +10,25 @@
 </ion-header>
 
 <ion-content>
-  <ion-thumbnail slot="start">
-    <ion-img [src]="detalleContacto?.foto"></ion-img>
-  </ion-thumbnail>
-  <ion-label>{{ detalleContacto?.nombre }} {{ detalleContacto?.apellido }}</ion-label>
-  <!-- Agrega más campos según la información que quieras mostrar -->
-  <ion-label>Ubicación: {{ detalleContacto?.ubicacion }}</ion-label>
-  <ion-label>Número de Celular: {{ detalleContacto?.numeroCelular }}</ion-label>
-  <ion-label>Correo: {{ detalleContacto?.correo }}</ion-label>
-  <!-- ... -->
+  <ion-list>
+    <ion-item>
+      <ion-thumbnail slot="start">
+        <ion-img [src]="detalleContacto?.foto"></ion-img>
+      </ion-thumbnail>
+      <ion-label>{{ detalleContacto?.nombre }} {{ detalleContacto?.apellido }}</ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Ubicación: {{ detalleContacto?.ubicacion }}</ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Número de Celular: {{ detalleContacto?.numeroCelular }}</ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Correo: {{ detalleContacto?.correo }}</ion-label>
+    </ion-item>
+    <!-- Agrega más campos según la información que quieras mostrar -->
+  </ion-list>
 </ion-content>

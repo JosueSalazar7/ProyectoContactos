@@ -7,7 +7,6 @@
 <ion-content>
   <ion-item>
     <ion-label position="floating">Foto</ion-label>
-    <!-- Puedes utilizar ion-input para el nombre del archivo o implementar un selector de archivos -->
     <ion-grid>
       <ion-row>
         <ion-col size="2" *ngFor="let photo of photos; index as position">
@@ -15,35 +14,46 @@
         </ion-col>
       </ion-row>
     </ion-grid>
-
-    <ion-fab-button (click)="addNewToGallery()" [disabled]="this.photos.length > 0">
+    <ion-fab-button (click)="addNewToGallery()" [disabled]="photos.length > 0">
       <ion-icon name="camera"></ion-icon>
     </ion-fab-button>
   </ion-item>
-  <ion-item>
-    <ion-label position="floating">Nombre</ion-label>
-    <ion-input [(ngModel)]="nombre" name="nombre" type="text"></ion-input>
-  </ion-item>
 
-  <ion-item>
-    <ion-label position="floating">Apellido</ion-label>
-    <ion-input [(ngModel)]="apellido" name="apellido" type="text"></ion-input>
-  </ion-item>
+  <form #contactForm="ngForm">
+    <ion-item>
+      <ion-label position="floating">Nombre</ion-label>
+      <ion-input [(ngModel)]="nombre" name="nombre" type="text" pattern="[A-Za-z]+" required></ion-input>
+      <div *ngIf="contactForm.controls['nombre']?.invalid && (contactForm.controls['nombre']?.dirty || contactForm.controls['nombre']?.touched)">
+        <ion-text color="danger">Por favor, ingrese solo letras.</ion-text>
+      </div>
+    </ion-item>
 
-  <ion-item>
-    <ion-label position="floating">Ubicación</ion-label>
-    <ion-input [(ngModel)]="ubicacion" name="ubicacion" type="text" readonly></ion-input>
-  </ion-item>
+    <ion-item>
+      <ion-label position="floating">Apellido</ion-label>
+      <ion-input [(ngModel)]="apellido" name="apellido" type="text" pattern="[A-Za-z]+" required></ion-input>
+      <div *ngIf="contactForm.controls['apellido']?.invalid && (contactForm.controls['apellido']?.dirty || contactForm.controls['apellido']?.touched)">
+        <ion-text color="danger">Por favor, ingrese solo letras.</ion-text>
+      </div>
+    </ion-item>
 
+    <ion-item>
+      <ion-label position="floating">Ubicación</ion-label>
+      <ion-input [(ngModel)]="ubicacion" name="ubicacion" type="text" readonly></ion-input>
+    </ion-item>
 
-  <ion-item>
-    <ion-label position="floating">Número de Celular</ion-label>
-    <ion-input [(ngModel)]="numeroCelular" name="numeroCelular" type="tel"></ion-input>
-  </ion-item>
+    <ion-item>
+      <ion-label position="floating">Número de Celular</ion-label>
+      <ion-input [(ngModel)]="numeroCelular" name="numeroCelular" type="tel" pattern="[0-9]+" required inputmode="numeric"></ion-input>
+      <div *ngIf="contactForm.controls['numeroCelular']?.invalid && (contactForm.controls['numeroCelular']?.dirty || contactForm.controls['numeroCelular']?.touched)">
+        <ion-text color="danger">Por favor, ingrese solo números.</ion-text>
+      </div>
+    </ion-item>
 
-  <ion-item>
-    <ion-label position="floating">Correo</ion-label>
-    <ion-input [(ngModel)]="correo" name="correo" type="email"></ion-input>
-  </ion-item>
-  <ion-button expand="full" (click)="guardarContacto()">Guardar</ion-button>
+    <ion-item>
+      <ion-label position="floating">Correo</ion-label>
+      <ion-input [(ngModel)]="correo" name="correo" type="email"></ion-input>
+    </ion-item>
+
+    <ion-button expand="full" (click)="guardarContacto()" [disabled]="!contactForm.valid">Guardar</ion-button>
+  </form>
 </ion-content>

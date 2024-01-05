@@ -19,30 +19,42 @@
       </ion-row>
     </ion-grid>
   </ion-item>
-  <ion-item>
-    <ion-label position="floating">Nombre</ion-label>
-    <ion-input [(ngModel)]="detalleContacto.nombre" name="nombre" type="text"></ion-input>
-  </ion-item>
 
-  <ion-item>
-    <ion-label position="floating">Apellido</ion-label>
-    <ion-input [(ngModel)]="detalleContacto.apellido" name="apellido" type="text"></ion-input>
-  </ion-item>
+  <form #contactForm="ngForm">
+    <ion-item>
+      <ion-label position="floating">Nombre</ion-label>
+      <ion-input [(ngModel)]="detalleContacto.nombre" name="nombre" type="text" pattern="[A-Za-z]+" required></ion-input>
+      <ion-text color="danger" *ngIf="contactForm.controls['nombre']?.invalid && (contactForm.controls['nombre']?.dirty || contactForm.controls['nombre']?.touched)">
+        Ingrese solo letras en el nombre
+      </ion-text>
+    </ion-item>
 
-  <ion-item>
-    <ion-label position="floating">Ubicación</ion-label>
-    <ion-input [(ngModel)]="detalleContacto.ubicacion" name="ubicacion" type="text" readonly></ion-input>
-  </ion-item>
+    <ion-item>
+      <ion-label position="floating">Apellido</ion-label>
+      <ion-input [(ngModel)]="detalleContacto.apellido" name="apellido" type="text" pattern="[A-Za-z]+" required></ion-input>
+      <ion-text color="danger" *ngIf="contactForm.controls['apellido']?.invalid && (contactForm.controls['apellido']?.dirty || contactForm.controls['apellido']?.touched)">
+        Ingrese solo letras en el apellido
+      </ion-text>
+    </ion-item>
 
-  <ion-item>
-    <ion-label position="floating">Número de Celular</ion-label>
-    <ion-input [(ngModel)]="detalleContacto.numeroCelular" name="numeroCelular" type="tel"></ion-input>
-  </ion-item>
+    <ion-item>
+      <ion-label position="floating">Ubicación</ion-label>
+      <ion-input [(ngModel)]="detalleContacto.ubicacion" name="ubicacion" type="text" readonly></ion-input>
+    </ion-item>
 
-  <ion-item>
-    <ion-label position="floating">Correo</ion-label>
-    <ion-input [(ngModel)]="detalleContacto.correo" name="correo" type="email"></ion-input>
-  </ion-item>
+    <ion-item>
+      <ion-label position="floating">Número de Celular</ion-label>
+      <ion-input [(ngModel)]="detalleContacto.numeroCelular" name="numeroCelular" type="tel" pattern="[0-9]+" required></ion-input>
+      <ion-text color="danger" *ngIf="contactForm.controls['numeroCelular']?.invalid && (contactForm.controls['numeroCelular']?.dirty || contactForm.controls['numeroCelular']?.touched)">
+        Ingrese solo números en el número de celular
+      </ion-text>
+    </ion-item>
 
-  <ion-button expand="full" (click)="guardarContacto()">Actualizar</ion-button>
+    <ion-item>
+      <ion-label position="floating">Correo</ion-label>
+      <ion-input [(ngModel)]="detalleContacto.correo" name="correo" type="email"></ion-input>
+    </ion-item>
+
+    <ion-button expand="full" (click)="guardarContacto()" [disabled]="!contactForm.valid">Actualizar</ion-button>
+  </form>
 </ion-content>
