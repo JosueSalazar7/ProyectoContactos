@@ -1,22 +1,33 @@
 # Proyecto Agenda de Contactos con Direcciones
  * Agenda de contactos, permite agregar contacto nuevo, editar, ver detalles, eliminar.
+
    
  * Login Registro 
 ![image](https://github.com/JosueSalazar7/ProyectoContactos/assets/117753844/311bea0c-25a5-4d4d-af8a-ad592b551cfe)
 
+
  * Lista de contactos
+   
 ![image](https://github.com/JosueSalazar7/ProyectoContactos/assets/117753844/de5849ef-9f3d-4fd0-bd6f-d5379bd30957)
 
+
  * Detalles del contacto
+   
 ![image](https://github.com/JosueSalazar7/ProyectoContactos/assets/117753844/2a9b5896-a118-4e2d-8261-9f477dc45a70)
 
+
  * Agregar Foto
+   
 ![image](https://github.com/JosueSalazar7/ProyectoContactos/assets/117753844/19860651-cb1d-4a64-a179-139ac8afe98c)
+
  
  * Editar Contacto
+   
 ![image](https://github.com/JosueSalazar7/ProyectoContactos/assets/117753844/10700a70-43d8-48e3-a078-26614c6f200b)
 
+
  * Agregar Contacto
+   
 ![image](https://github.com/JosueSalazar7/ProyectoContactos/assets/117753844/8491e984-9ce7-416c-837a-7477b21944df)
 
 
