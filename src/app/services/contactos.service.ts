@@ -78,25 +78,18 @@ export class ContactosService {
 
   // Funcionalidad de Contactos
 
-  agregarContacto(foto: string, nombre: string, apellido: string, ubicacion: string, numeroCelular: string, correo: string, id: string, idClient: string) {
+  agregarContacto(contacto: Contacto): Promise<void> {
     const idCliente = this.currentUser.uid;
     const idContacto = this.afs.createId();
 
     // Asignar los IDs al contacto
-    id = idContacto;
-    idClient = idCliente;
+    contacto.id = idContacto;
+    contacto.idCliente = idCliente;
 
-    return this.afs.collection('contactos').add({
-      foto,
-      nombre,
-      apellido,
-      ubicacion,
-      numeroCelular,
-      correo,
-      id,
-      idClient
-    });
+
+    return this.afs.collection<Contacto>('contactos').doc(idContacto).set(contacto);
   }
+
 
 
 
