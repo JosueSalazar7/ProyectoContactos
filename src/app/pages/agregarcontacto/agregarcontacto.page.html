@@ -9,21 +9,23 @@
     <ion-label position="floating">Foto</ion-label>
     <ion-grid>
       <ion-row>
-        <ion-col size="2" *ngFor="let photo of photos; index as position">
-          <ion-img [src]="photo.webviewPath" (click)="showActionSheet(position)"></ion-img>
+        <ion-col size="2">
+          <ion-img [src]="foto"></ion-img>
+        </ion-col>
+        <ion-col size="10">
+          <ion-button (click)="addNewToGallery()">Seleccionar Foto</ion-button>
         </ion-col>
       </ion-row>
     </ion-grid>
-    <ion-fab-button (click)="addNewToGallery()" [disabled]="photos.length > 0">
-      <ion-icon name="camera"></ion-icon>
-    </ion-fab-button>
+
   </ion-item>
 
   <form #contactForm="ngForm">
     <ion-item>
       <ion-label position="floating">Nombre</ion-label>
       <ion-input [(ngModel)]="nombre" name="nombre" type="text" pattern="[A-Za-z]+" required></ion-input>
-      <div *ngIf="contactForm.controls['nombre']?.invalid && (contactForm.controls['nombre']?.dirty || contactForm.controls['nombre']?.touched)">
+      <div
+        *ngIf="contactForm.controls['nombre']?.invalid && (contactForm.controls['nombre']?.dirty || contactForm.controls['nombre']?.touched)">
         <ion-text color="danger">Por favor, ingrese solo letras.</ion-text>
       </div>
     </ion-item>
@@ -31,7 +33,8 @@
     <ion-item>
       <ion-label position="floating">Apellido</ion-label>
       <ion-input [(ngModel)]="apellido" name="apellido" type="text" pattern="[A-Za-z]+" required></ion-input>
-      <div *ngIf="contactForm.controls['apellido']?.invalid && (contactForm.controls['apellido']?.dirty || contactForm.controls['apellido']?.touched)">
+      <div
+        *ngIf="contactForm.controls['apellido']?.invalid && (contactForm.controls['apellido']?.dirty || contactForm.controls['apellido']?.touched)">
         <ion-text color="danger">Por favor, ingrese solo letras.</ion-text>
       </div>
     </ion-item>
@@ -43,8 +46,10 @@
 
     <ion-item>
       <ion-label position="floating">Número de Celular</ion-label>
-      <ion-input [(ngModel)]="numeroCelular" name="numeroCelular" type="tel" pattern="[0-9]+" required inputmode="numeric"></ion-input>
-      <div *ngIf="contactForm.controls['numeroCelular']?.invalid && (contactForm.controls['numeroCelular']?.dirty || contactForm.controls['numeroCelular']?.touched)">
+      <ion-input [(ngModel)]="numeroCelular" name="numeroCelular" type="tel" pattern="[0-9]+" required
+        inputmode="numeric"></ion-input>
+      <div
+        *ngIf="contactForm.controls['numeroCelular']?.invalid && (contactForm.controls['numeroCelular']?.dirty || contactForm.controls['numeroCelular']?.touched)">
         <ion-text color="danger">Por favor, ingrese solo números.</ion-text>
       </div>
     </ion-item>

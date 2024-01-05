@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ContactosService, Contacto } from '../../services/contactos.service';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
-import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
+import { Camera, CameraResultType, CameraOptions, Photo } from '@capacitor/camera';
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Platform } from '@ionic/angular';
 import { Preferences } from '@capacitor/preferences';
@@ -49,8 +49,7 @@ export class AgregarcontactoPage implements OnInit {
   }
 
 
-  public photos: UserPhoto[] = [];
-  private PHOTO_STORAGE: string = 'photos';
+
   getCurrentCoordinates() {
     const options = {
       timeout: 10000,
@@ -70,177 +69,22 @@ export class AgregarcontactoPage implements OnInit {
       });
   }
 
-  async deleteImageByUrl(): Promise<void> {
-    try {
-      // Obtener la referencia a la imagen en Firebase Storage usando la URL
-      const imageRef = this.storage.storage.refFromURL(this.foto);
-
-      // Eliminar la imagen
-      await imageRef.delete();
-
-      console.log(`Imagen eliminada con éxito: ${this.foto}`);
-    } catch (error) {
-      console.error('Error al eliminar la imagen', error);
-      throw error; // Puedes propagar el error si es necesario
-    }
-  }
-
-  public async showActionSheet(position: number) {
-    const actionSheet = await this.actionSheetController.create({
-      header: 'Photos',
-      buttons: [{
-        text: 'Delete',
-        role: 'destructive',
-        icon: 'trash',
-        handler: () => {
-          this.deletePicture(this.photo, position);
-        }
-      }, {
-        text: 'Cancel',
-        icon: 'close',
-        role: 'cancel',
-        handler: () => {
-          // Nothing to do, action sheet is automatically closed
-        }
-      }]
-    });
-    await actionSheet.present();
-  }
   public async addNewToGallery() {
     // Take a photo
-    const capturedPhoto = await Camera.getPhoto({
-      resultType: CameraResultType.Uri, // file-based data; provides best performance
-      source: CameraSource.Camera, // automatically take a new photo with the camera
-      quality: 100, // highest quality (0 to 100)
+    const options: CameraOptions = {
+      quality: 100,
+      allowEditing: true,
+      resultType: CameraResultType.DataUrl,
+    };
+
+    Camera.getPhoto(options).then((image) => {
+      this.foto = image.dataUrl;
+    }).catch((error) => {
+      console.error('Error al seleccionar la foto', error);
     });
 
-    const savedImageFile = await this.savePicture(capturedPhoto);
-    console.log("==============", savedImageFile)
-    // Add new photo to Photos array
-    this.photos.unshift(savedImageFile);
-
-    // await this.savePictureURL(capturedPhoto);
-    await this.uploadImage(capturedPhoto);
-
-    // Cache all photo data for future retrieval
-    Preferences.set({
-      key: this.PHOTO_STORAGE,
-      value: JSON.stringify(this.photos),
-    });
-  }
-  private async savePicture(photo: Photo) {
-    // Convert photo to base64 format, required by Filesystem API to save
-    const base64Data = await this.readAsBase64(photo);
-
-    // Write the file to the data directory
-    const fileName = new Date().getTime() + '.jpeg';
-    const savedFile = await Filesystem.writeFile({
-      path: fileName,
-      data: base64Data,
-      directory: Directory.Data,
-    });
-
-    if (this.platform.is('hybrid')) {
-      // Display the new image by rewriting the 'file://' path to HTTP
-      // Details: https://ionicframework.com/docs/building/webview#file-protocol
-      return {
-        filepath: savedFile.uri,
-        webviewPath: Capacitor.convertFileSrc(savedFile.uri),
-      };
-    } else {
-      // Use webPath to display the new image instead of base64 since it's
-      // already loaded into memory
-      return {
-        filepath: fileName,
-        webviewPath: photo.webPath,
-      };
-    }
   }
 
-  async uploadImage(captu: Photo): Promise<void> {
-    try {
-      const savedImageFile = await this.savePicture(captu);
-      const webPath = savedImageFile.webviewPath;
-
-      // Fetch the image as Blob
-      const blob = await fetch(webPath).then((res) => res.blob());
-
-      // Storage path
-      const fileStoragePath = `filesStorage/${new Date().getTime()}_${savedImageFile.filepath}`;
-
-      // Image reference
-      const imageRef = this.storage.ref(fileStoragePath);
-
-      // File upload task
-      const uploadTask = imageRef.put(blob);
-
-      // Wait for the snapshotChanges to complete
-      await uploadTask.snapshotChanges().pipe(
-        finalize(() => {
-          imageRef.getDownloadURL().subscribe((res) => {
-            const downloadURL = res;
-            console.log(downloadURL);
-            this.foto = downloadURL
-            // Use the downloadURL as needed
-          });
-        })
-      ).toPromise(); // Convert the observable to a promise
-    } catch (error) {
-      console.error('Error in uploadImage', error);
-    }
-  }
-
-
-  storeFilesFirebase(arg0: { name: string; filepath: any; }) {
-    throw new Error('Method not implemented.');
-  }
-
-
-  private async readAsBase64(photo: Photo) {
-    // "hybrid" will detect Cordova or Capacitor
-    if (this.platform.is('hybrid')) {
-      // Read the file into base64 format
-      const file = await Filesystem.readFile({
-        path: photo.path,
-      });
-
-      return file.data;
-    } else {
-      // Fetch the photo, read as a blob, then convert to base64 format
-      const response = await fetch(photo.webPath!);
-      const blob = await response.blob();
-
-      return (await this.convertBlobToBase64(blob)) as string;
-    }
-  }
-
-  // Delete picture by removing it from reference data and the filesystem
-  public async deletePicture(photo: UserPhoto, position: number) {
-    this.deleteImageByUrl();
-    this.photos.splice(position, 1);
-
-    // Update photos array cache by overwriting the existing photo array
-    Preferences.set({
-      key: this.PHOTO_STORAGE,
-      value: JSON.stringify(this.photos),
-    });
-    this.convertBlobToBase64 = (blob: Blob) =>
-      new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onerror = reject;
-        reader.onload = () => {
-          resolve(reader.result);
-        };
-        reader.readAsDataURL(blob);
-      });
-
-    // delete photo file from filesystem
-    const filename = photo.filepath.substr(photo.filepath.lastIndexOf('/') + 1);
-    await Filesystem.deleteFile({
-      path: filename,
-      directory: Directory.Data,
-    });
-  }
   async getAddressFromCoords() {
     try {
       const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.latitude}&lon=${this.longitude}`);
@@ -266,30 +110,21 @@ export class AgregarcontactoPage implements OnInit {
       };
       reader.readAsDataURL(blob);
     });
-  async guardarContacto() {
-    try {
-      console.log("Entrooooooooooooo", this.foto);
 
-      const nuevoContacto: Contacto = {
-        id: '',
-        nombre: this.nombre,
-        apellido: this.apellido,
-        ubicacion: this.ubicacion,
-        foto: this.foto,
-        numeroCelular: this.numeroCelular,
-        correo: this.correo,
-      };
+  guardarContacto() {
+    console.log("Entrooooooooooooo==", this.foto);
 
-      console.log("Nuevo contacto", nuevoContacto);
+    this.contactosService.agregarContacto(
+      this.foto,
+      this.nombre,
+      this.apellido,
+      this.ubicacion,
+      this.numeroCelular,
+      this.correo,
+      this.id,
+      this.idClient
+    )
 
-      // Verificar si la propiedad 'foto' tiene un valor antes de agregar el contacto
-      if (this.foto) {
-        await this.contactosService.agregarContacto(nuevoContacto);
-        this.router.navigateByUrl('/contactos');
-      }
-    } catch (error) {
-      console.error('Error al guardar el contacto', error);
-    }
   }
 }
 export interface UserPhoto {
