@@ -29,7 +29,10 @@ export interface Contacto {
 export class ContactosService {
   currentUser: User = null;
 
-  constructor(private afAuth: AngularFireAuth, private afs: AngularFirestore, private storage: AngularFireStorage, // Agrega AngularFireStorage
+  constructor(
+    private afAuth: AngularFireAuth,
+    private afs: AngularFirestore, private storage:
+      AngularFireStorage, // Agrega AngularFireStorage
   ) {
     this.afAuth.authState.subscribe(user => {
       if (user) {
@@ -38,19 +41,35 @@ export class ContactosService {
     });
 
   }
-
-  async signup({ email, password }): Promise<any> {
-    return this.afAuth.createUserWithEmailAndPassword(email, password).then(credential => {
-      const uid = credential.user.uid;
-      return this.afs.doc(`users/${uid}`).set({
-        uid,
-        email: credential.user.email,
-      });
-    });
+  isLoggedIn(): boolean {
+    const isLoggedIn = !!this.afAuth.currentUser;
+    console.log('Is user logged in?', isLoggedIn);
+    return isLoggedIn;
   }
 
-  signIn({ email, password }) {
-    return this.afAuth.signInWithEmailAndPassword(email, password);
+  getCurrentUser(): User | null {
+    return this.currentUser;
+  }
+  async signup({ email, password }): Promise<any> {
+    const credential = await this.afAuth.createUserWithEmailAndPassword(
+      email,
+      password
+    );
+
+    console.log('results', credential);
+    const uid = credential.user.uid;
+
+    return this.afs.doc(
+      `users/${uid}`
+    ).set({
+      uid,
+      email: credential.user.email,
+    })
+  }
+
+
+  signIn(credentials: { email: string; password: string }): Promise<any> {
+    return this.afAuth.signInWithEmailAndPassword(credentials.email, credentials.password);
   }
 
   signOut(): Promise<void> {

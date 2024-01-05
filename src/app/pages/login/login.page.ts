@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AlertController, LoadingController } from '@ionic/angular';
+import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { ContactosService } from '../../services/contactos.service';
 
 @Component({
@@ -17,7 +17,8 @@ export class LoginPage implements OnInit {
     private router: Router,
     private alertController: AlertController,
     private loadingController: LoadingController,
-    private chatService: ContactosService
+    private contactoService: ContactosService,
+    private toastController: ToastController,
   ) { }
 
   ngOnInit() {
@@ -26,11 +27,10 @@ export class LoginPage implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
-
-  async signUp(){
+  async signUp() {
     const loading = await this.loadingController.create();
     await loading.present();
-    this.chatService
+    this.contactoService
       .signup(this.credentialForm.value)
       .then(
         (user) => {
@@ -44,43 +44,57 @@ export class LoginPage implements OnInit {
             message: err.message,
             buttons: ['OK'],
           });
- 
+
           await alert.present();
         }
       );
   }
-
   async signIn() {
     const loading = await this.loadingController.create();
     await loading.present();
- 
-    this.chatService
-      .signIn(this.credentialForm.value)
-      .then(
-        (res) => {
-          loading.dismiss();
-          this.router.navigateByUrl('/contactos', { replaceUrl: true });
-        },
-        async (err) => {
-          loading.dismiss();
-          const alert = await this.alertController.create({
-            header: ':(',
-            message: err.message,
-            buttons: ['OK'],
-          });
- 
-          await alert.present();
-        }
-      );
+
+    if (this.credentialForm.valid) {
+      const credentials = {
+        email: this.credentialForm.value.email,
+        password: this.credentialForm.value.password
+      };
+
+      const user = await this.contactoService.signIn(credentials).catch((err) => {
+        this.presentToast(err);
+        console.log(err);
+        loading.dismiss();
+      });
+
+      if (user) {
+        loading.dismiss();
+        this.router.navigate(['/contactos']);
+      }
+    } else {
+      console.log('Please provide all the required values!');
+    }
+  }
+  get errorControl() {
+    return this.credentialForm.controls;
+  }
+
+  async presentToast(message: undefined) {
+    console.log(message);
+
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 1500,
+      position: 'top',
+    });
+
+    await toast.present();
   }
 
   // Easy access for form fields
   get email() {
     return this.credentialForm.get('email');
   }
-  
+
   get password() {
     return this.credentialForm.get('password');
   }
-
 }
